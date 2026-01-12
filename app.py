@@ -22,12 +22,24 @@ st.markdown("Live AI-powered analysis of financial news impact on Indian Markets
 # Sidebar for Configuration
 with st.sidebar:
     st.header("Configuration")
-    api_key = st.text_input("Enter Gemini API Key", type="password", help="Get it from Google AI Studio")
+    
+    st.subheader("1. AI Analysis (Required)")
+    api_key = st.text_input("Gemini API Key", type="password", help="For Sentiment Analysis")
+    
+    st.subheader("2. News Source (Optional)")
+    perplexity_key = st.text_input("Perplexity API Key", type="password", help="For Better News Discovery")
+    
     if not api_key:
-        st.warning("⚠️ Please provide a Gemini API Key to enable analysis.")
+        st.warning("⚠️ Please provide a Gemini API Key.")
     
     st.divider()
     st.markdown("### Status")
+    
+    if perplexity_key:
+        st.success("Using Perplexity for News 🧠")
+    else:
+        st.info("Using RSS Feeds 📡")
+        
     st.write(f"Last Refresh: {time.strftime('%H:%M:%S')}")
     
     if st.button("Manual Refresh"):
@@ -71,13 +83,18 @@ def apply_styling(df):
 # Fetch and Analyze Data
 if api_key:
     with st.spinner('Fetching and Analyzing Latest News...'):
-        # 1. Fetch News
-        raw_news = news_engine.fetch_latest_news()
+        # 1. Fetch News (Perplexity or RSS)
+        if perplexity_key:
+            raw_news = news_engine.fetch_news_perplexity(perplexity_key)
+            # If Perplexity fails or returns empty, fallback? 
+            # For now, let's assume it works or returns empty. 
+            if not raw_news:
+                st.toast("Perplexity returned no properties. Switching to RSS fallback.")
+                raw_news = news_engine.fetch_latest_news()
+        else:
+            raw_news = news_engine.fetch_latest_news()
         
-        # 2. Analyze with AI (Limit to top 5 for demo/speed purposes if this was a loop, effectively doing all)
-        # Note: In a real high-freq app, we'd cache results to avoid re-analyzing same headlines.
-        # For this prototype, we'll analyze a subset or check against simple cache if we implemented it.
-        # We will just analyze the top 5 freshest items to save tokens/time for this demo.
+        # 2. Analyze with AI (Limit to top 20)
         
         analyzed_results = []
         

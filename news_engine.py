@@ -1,6 +1,8 @@
 import feedparser
 import pandas as pd
 from datetime import datetime
+import json
+from openai import OpenAI
 
 # RSS Feed URLs
 RSS_FEEDS = {
@@ -9,6 +11,67 @@ RSS_FEEDS = {
     "Live Mint": "https://www.livemint.com/rss/instory",
     "BBC Global": "http://feeds.bbci.co.uk/news/world/rss.xml"
 }
+
+def fetch_news_perplexity(api_key):
+    """
+    Fetches curated news from Perplexity API.
+    Returns list of dicts with title, summary, source, published.
+    """
+    if not api_key:
+        return []
+        
+    print(f"[{datetime.now().strftime('%H:%M:%S')}] Fetching news from Perplexity AI...")
+    
+    try:
+        client = OpenAI(api_key=api_key, base_url="https://api.perplexity.ai")
+        
+        messages = [
+            {
+                "role": "system",
+                "content": "You are a real-time financial news aggregator. Return output as valid JSON only."
+            },
+            {
+                "role": "user",
+                "content": (
+                    "Find the top 15 most important breaking financial news headlines for the Indian Stock Market, Nifty 50, and key global events from the last 6 hours. "
+                    "For each item, provide a 'title', 'summary', 'source' (e.g. Reuters, Bloomberg, Mint), and 'published' time. "
+                    "Return a JSON object with a key 'news' containing the list of items. "
+                    "Do NOT use markdown formatting like ```json. Just raw JSON."
+                )
+            }
+        ]
+        
+        response = client.chat.completions.create(
+            model="sonar-pro",
+            messages=messages,
+        )
+        
+        content = response.choices[0].message.content.strip()
+        
+        # Cleanup markdown if present (double check)
+        if content.startswith("```json"):
+            content = content[7:]
+        if content.endswith("```"):
+            content = content[:-3]
+            
+        data = json.loads(content)
+        
+        news_items = []
+        for item in data.get('news', []):
+            news_items.append({
+                "title": item.get('title', 'No Title'),
+                "summary": item.get('summary', ''),
+                "link": '#', # Perplexity might not give direct links easily in this format, or we'd need citations
+                "source": f"Perplexity ({item.get('source', 'Web')})",
+                "published": item.get('published', datetime.now().strftime("%Y-%m-%d %H:%M"))
+            })
+            
+        print(f"Fetched {len(news_items)} items from Perplexity.")
+        return news_items
+
+    except Exception as e:
+        print(f"Error fetching from Perplexity: {e}")
+        return []
 
 def fetch_latest_news():
     """
