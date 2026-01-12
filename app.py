@@ -61,7 +61,7 @@ def apply_styling(df):
         return ''
 
     # Reorder columns if they exist
-    cols = ['impact_score', 'related_stock_ticker', 'sentiment', 'headline', 'impact_type', 'trade_signal']
+    cols = ['impact_score', 'related_stock_ticker', 'sentiment', 'Title', 'impact_type', 'trade_signal', 'Source']
     available_cols = [c for c in cols if c in df.columns]
     df = df[available_cols]
 
@@ -85,16 +85,16 @@ if api_key:
         
         progress_bar = st.progress(0)
         
-        for idx, item in enumerate(raw_news[:5]): # analyzing top 5 for responsiveness
+        for idx, item in enumerate(raw_news[:20]): # Increased to top 20 for more data
             analysis = ai_analyst.analyze_news(item['title'], item['summary'], api_key)
             result = {
-                "headline": item['title'],
+                "Title": item['title'],
                 **analysis,
-                "source": item['source'],
-                "published": item['published']
+                "Source": item['source'],
+                "Published": item['published']
             }
             analyzed_results.append(result)
-            progress_bar.progress((idx + 1) / 5)
+            progress_bar.progress((idx + 1) / 20)
 
         progress_bar.empty()
             
@@ -147,9 +147,13 @@ if not st.session_state.news_data.empty:
                 help="Score from -10 to +10",
                 format="%d ⭐",
             ),
-             "headline": st.column_config.TextColumn(
+             "Title": st.column_config.TextColumn(
                 "Headline",
                 width="large"
+            ),
+             "related_stock_ticker": st.column_config.TextColumn(
+                "Ticker",
+                width="small"
             ),
         }
     )

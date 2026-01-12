@@ -50,7 +50,7 @@ def analyze_news(headline, summary, api_key):
     
     Required JSON Output Structure:
     {{
-      "related_stock_ticker": "RELIANCE / HDFCBANK / NIFTY50 / NONE (or other specific Indian ticker)",
+      "related_stock_ticker": "Extract the specific Indian Stock Ticker (NSE Symbol). Examples: RELIANCE, TCS, INFY, HDFCBANK. If it's a general market story, use 'NIFTY50' or 'SENSEX'. If NO stock is mentioned, use 'N/A'.",
       "sector": "Banking / Oil&Gas / Geopolitics / Macro / IT / Auto / etc.",
       "impact_score": "Integer between -10 (Catastrophic) to +10 (Skyrocketing)",
       "impact_type": "Sanctions / War / Duty_Change / Earnings / General / Regulatory",

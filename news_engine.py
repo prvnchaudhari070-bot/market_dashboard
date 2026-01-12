@@ -6,6 +6,7 @@ from datetime import datetime
 RSS_FEEDS = {
     "MoneyControl": "https://www.moneycontrol.com/rss/MCtopnews.xml",
     "Economic Times": "https://economictimes.indiatimes.com/markets/rssfeeds/1977021501.cms",
+    "Live Mint": "https://www.livemint.com/rss/instory",
     "BBC Global": "http://feeds.bbci.co.uk/news/world/rss.xml"
 }
 
