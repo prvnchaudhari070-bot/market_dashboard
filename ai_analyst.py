@@ -62,7 +62,7 @@ def analyze_news(headline, summary, api_key):
     """
 
     try:
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        model = genai.GenerativeModel('gemini-1.5-flash-latest')
         response = model.generate_content([system_prompt, user_prompt])
         
         raw_text = response.text
