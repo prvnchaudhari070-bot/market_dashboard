@@ -33,10 +33,14 @@ def fetch_news_perplexity(api_key):
             {
                 "role": "user",
                 "content": (
-                    "Find the top 15 most important breaking financial news headlines for the Indian Stock Market, Nifty 50, and key global events from the last 6 hours. "
-                    "For each item, provide a 'title', 'summary', 'source' (e.g. Reuters, Bloomberg, Mint), and 'published' time. "
-                    "Return a JSON object with a key 'news' containing the list of items. "
-                    "Do NOT use markdown formatting like ```json. Just raw JSON."
+                    "Find the top 20 most important breaking financial news headlines affecting the Indian Market. "
+                    "Prioritize the search in this strict order: "
+                    "1. Specific news about Nifty 50 companies (Earnings, Deals, Fraud). "
+                    "2. Key Sector news (Banking, IT, Auto, Metals). "
+                    "3. India Macroeconomic news (RBI, Inflation, Budget). "
+                    "4. Major Global events affecting India (Fed, War, Oil). "
+                    "For each item, provide a 'title', 'summary', 'source', and 'published' time. "
+                    "Return a JSON object with a key 'news' containing the list of items."
                 )
             }
         ]

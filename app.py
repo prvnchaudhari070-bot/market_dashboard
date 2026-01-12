@@ -152,28 +152,51 @@ if not st.session_state.news_data.empty:
     top_sector = df['sector'].mode()[0] if 'sector' in df.columns and not df.empty else "N/A"
     c3.metric("Top Active Sector", top_sector)
 
-    # Main Data Table
+    # Main Data Table with Tabs
     st.subheader("Latest Market Impact Analysis")
-    st.dataframe(
-        apply_styling(df),
-        use_container_width=True,
-        height=600,
-        column_config={
-            "impact_score": st.column_config.NumberColumn(
-                "Impact Score",
-                help="Score from -10 to +10",
-                format="%d ⭐",
-            ),
-             "Title": st.column_config.TextColumn(
-                "Headline",
-                width="large"
-            ),
-             "related_stock_ticker": st.column_config.TextColumn(
-                "Ticker",
-                width="small"
-            ),
-        }
-    )
+    
+    tab1, tab2, tab3, tab4 = st.tabs(["⚡ Nifty 50 Stocks", "🏭 Sectors", "🇮🇳 India Macro", "🌍 Global"])
+    
+    # Define column config once
+    col_config = {
+        "impact_score": st.column_config.NumberColumn("Score", format="%d ⭐"),
+        "Title": st.column_config.TextColumn("Headline", width="medium"),
+        "related_stock_ticker": st.column_config.TextColumn("Ticker", width="small"),
+        "trade_signal": st.column_config.TextColumn("Signal", width="medium"),
+    }
+
+    # Helper to show df
+    def show_filtered_df(filtered_df):
+        if not filtered_df.empty:
+            st.dataframe(
+                apply_styling(filtered_df),
+                use_container_width=True,
+                height=500,
+                column_config=col_config,
+                hide_index=True
+            )
+        else:
+            st.info("No active news in this category.")
+
+    with tab1:
+        # Filter for Stock specific news
+        stock_news = df[df['news_scope'] == 'Stock'] if 'news_scope' in df.columns else df
+        show_filtered_df(stock_news)
+        
+    with tab2:
+        # Filter for Sector news
+        sector_news = df[df['news_scope'] == 'Sector'] if 'news_scope' in df.columns else pd.DataFrame()
+        show_filtered_df(sector_news)
+        
+    with tab3:
+        # Filter for India Macro
+        india_news = df[df['news_scope'] == 'India_Macro'] if 'news_scope' in df.columns else pd.DataFrame()
+        show_filtered_df(india_news)
+        
+    with tab4:
+        # Filter for Global
+        global_news = df[df['news_scope'] == 'Global'] if 'news_scope' in df.columns else pd.DataFrame()
+        show_filtered_df(global_news)
 
 elif api_key:
     st.warning("No news found or analysis failed.")
