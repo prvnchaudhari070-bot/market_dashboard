@@ -61,41 +61,44 @@ def analyze_news(headline, summary, api_key):
     Rule: If the news mentions "Sanctions", "War", "Strike", or "Customs Duty", the score must be high magnitude (above 7 or below -7).
     """
 
-    try:
-        model = genai.GenerativeModel('gemini-1.5-flash-latest')
-        response = model.generate_content([system_prompt, user_prompt])
-        
-        raw_text = response.text
-        cleaned_json = clean_json_string(raw_text)
-        
-        parsed_result = json.loads(cleaned_json)
-        
-        # Ensure impact_score is int
-        if 'impact_score' in parsed_result:
-            try:
-                parsed_result['impact_score'] = int(parsed_result['impact_score'])
-            except ValueError:
-                parsed_result['impact_score'] = 0
-                
-        return parsed_result
+    # List of models to try in order of preference (Speed/Cost -> Reliability)
+    models_to_try = [
+        'gemini-1.5-flash',
+        'gemini-1.5-flash-latest',
+        'gemini-pro',
+        'gemini-1.0-pro'
+    ]
 
-    except json.JSONDecodeError:
-        print(f"Failed to parse JSON for headline: {headline}")
-        return {
-            "related_stock_ticker": "ERROR",
-            "sector": "ERROR",
-            "impact_score": 0,
-            "impact_type": "Parse Error",
-            "sentiment": "Neutral",
-            "trade_signal": "Manual Review Needed"
-        }
-    except Exception as e:
-        print(f"API Error for headline: {headline}. Error: {e}")
-        return {
-            "related_stock_ticker": "ERROR",
-            "sector": "ERROR",
-            "impact_score": 0,
-            "impact_type": "API Error",
-            "sentiment": "Neutral",
-            "trade_signal": f"Error: {str(e)}"
-        }
+    for model_name in models_to_try:
+        try:
+            model = genai.GenerativeModel(model_name)
+            response = model.generate_content([system_prompt, user_prompt])
+            
+            raw_text = response.text
+            cleaned_json = clean_json_string(raw_text)
+            
+            parsed_result = json.loads(cleaned_json)
+            
+            # Ensure impact_score is int
+            if 'impact_score' in parsed_result:
+                try:
+                    parsed_result['impact_score'] = int(parsed_result['impact_score'])
+                except ValueError:
+                    parsed_result['impact_score'] = 0
+                    
+            return parsed_result
+
+        except Exception as e:
+            # If it's the last model and still failing, print error
+            if model_name == models_to_try[-1]:
+                print(f"All models failed. Last error with {model_name}: {e}")
+                return {
+                    "related_stock_ticker": "ERROR",
+                    "sector": "ERROR",
+                    "impact_score": 0,
+                    "impact_type": "API Error",
+                    "sentiment": "Neutral",
+                    "trade_signal": f"Model Error: {str(e)}"
+                }
+            # Otherwise continue to next model
+            continue
